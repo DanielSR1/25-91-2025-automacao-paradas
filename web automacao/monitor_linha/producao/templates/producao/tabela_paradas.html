@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Paradas da Linha</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; vertical-align: top; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        fieldset { border: none; text-align: left; }
+    </style>
+    <script>
+        function enviarMotivo(nome_linha, inicio_parada, fim_parada, motivo) {
+            fetch("{% url 'registrar_motivo' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: new URLSearchParams({
+                    nome_linha: nome_linha,
+                    inicio_parada: inicio_parada,
+                    fim_parada: fim_parada,
+                    motivo: motivo
+                })
+            }).then(response => {
+                if (response.ok) {
+                    location.reload(); // recarrega a página para atualizar a tabela
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Status de Paradas da Linha</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Linha</th>
+                <th>Início da Parada</th>
+                <th>Fim da Parada</th>
+                <th>Motivo da Parada</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for parada in paradas %}
+            <tr>
+                <td>{{ parada.nome_linha }}</td>
+                <td>{{ parada.inicio_parada }}</td>
+                <td>{{ parada.fim_parada|default:"Ainda em parada" }}</td>
+                <td>
+                    <fieldset>
+                        <label><input type="radio" name="motivo_{{ forloop.counter }}" value="setup"
+                            onclick="enviarMotivo('{{ parada.nome_linha }}', '{{ parada.inicio_parada }}', '{{ parada.fim_parada }}', 'setup')"> Setup</label><br>
+                        <label><input type="radio" name="motivo_{{ forloop.counter }}" value="refeicao"
+                            onclick="enviarMotivo('{{ parada.nome_linha }}', '{{ parada.inicio_parada }}', '{{ parada.fim_parada }}', 'refeicao')"> Refeição</label><br>
+                        <label><input type="radio" name="motivo_{{ forloop.counter }}" value="manutencao"
+                            onclick="enviarMotivo('{{ parada.nome_linha }}', '{{ parada.inicio_parada }}', '{{ parada.fim_parada }}', 'manutencao')"> Manutenção</label><br>
+                        <label><input type="radio" name="motivo_{{ forloop.counter }}" value="logistica"
+                            onclick="enviarMotivo('{{ parada.nome_linha }}', '{{ parada.inicio_parada }}', '{{ parada.fim_parada }}', 'logistica')"> Logística</label><br>
+                        <label><input type="radio" name="motivo_{{ forloop.counter }}" value="externo"
+                            onclick="enviarMotivo('{{ parada.nome_linha }}', '{{ parada.inicio_parada }}', '{{ parada.fim_parada }}', 'externo')"> Externo</label>
+                    </fieldset>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
